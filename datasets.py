@@ -7,7 +7,7 @@ import operator
 
 class datasets:
 
-    def __init__(self, direc, direcList, direcNew, maxVal, maxKey):
+    def __init__(self, direc, direcList, direcNew, maxInt, maxAngle, IntOrAng):
         self.direc = direc
         self.direcList = direcList
         self.direcNew = direcNew
