@@ -7,7 +7,7 @@ import operator
 
 class datasets:
 
-    def __init__(self, direc, direcList, direcNew, maxInt, maxAngle, IntOrAng):
+    def __init__(self, direc, direcList, direcNew, maxVal, maxKey):
         self.direc = direc
         self.direcList = direcList
         self.direcNew = direcNew
@@ -27,8 +27,6 @@ class datasets:
 
         # if-else statement is probably bad practice; is there a better way to edit this code??
 
-    # instead of replacing labels, maybe I should have the program determine by "columns"
-    # i.e. i=-4 vs i=-3
     def imgOrPlot(direc):
         dir_new = []
         # dir_new = set()
