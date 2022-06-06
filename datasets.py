@@ -10,12 +10,11 @@ import operator
 
 class datasets:
 
-    def __init__(self, direc, direcList, direcNew, maxVal, maxKey, IntOrAng):
+    def __init__(self, direc, direcList, direcNew, PeakAngle, IntOrAng):
         self.direc = direc
         self.direcList = direcList
         self.direcNew = direcNew
-        self.maxInt = maxInt
-        self.maxAngle = maxAngle
+        self.maxInt = PeakAngle
         self.IntOrAng = IntOrAng
 
     # sorts the list of filenames by job number
