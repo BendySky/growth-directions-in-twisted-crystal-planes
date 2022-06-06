@@ -1,13 +1,16 @@
+from mpl_toolkits.axes_grid1 import ImageGrid
 from matplotlib import pyplot as plt
+from PIL import Image
 import seaborn as sns
 import pandas as pd
+import os, os.path
 import numpy as np
 import operator
 
 
 class datasets:
 
-    def __init__(self, direc, direcList, direcNew, maxInt, maxAngle, IntOrAng):
+    def __init__(self, direc, direcList, direcNew, maxVal, maxKey, IntOrAng):
         self.direc = direc
         self.direcList = direcList
         self.direcNew = direcNew
@@ -54,23 +57,73 @@ class datasets:
 
         key = list(range(len(direc)))
         col_list = [0, 1]
+        rename = ["Angle", "Intensity"]
 
         for i in direc:
-            direcList.append(pd.read_csv(i, delimiter=' ', header=None, usecols=col_list))
+            direcList.append(pd.read_csv(i, delimiter=' ', header=None,
+                                         names=rename, usecols=col_list))
+
         direcList = dict(zip(key, direcList))
 
-    def getMaxPeak(dataFn, maxInt, maxAngle):
+    def getMaxPeak(dataFn, maxIntAngle):
 
         for i in range(len(dataFn)):
-            maxInt.append(max(dataFn[i][1]))
-            maxAngle.append(max(dataFn[i][1].items(), key=operator.itemgetter(1))[0])
+            # maxInt.append(max(dataFn[i]['Intensity']))
+            # maxAngle.append(max(dataFn[i]['Intensity'].items(), key=operator.itemgetter(1))[0])
+            maxIntAngle.append(dataFn[i].loc[dataFn[i]['Intensity'].idxmax()].tolist())
 
-    def xrd_heatmap(IntOrAng, plt_size=1.0, plotTitle='', mapColor=''):
+    def xrd_heatmap(PeakAngle, IntOrAng=1, plt_size=1.0, plotTitle='', mapColor=''):
 
-        size = int(np.sqrt(len(IntOrAng)))
-        mapDim = np.reshape(IntOrAng, (size, size))
+        reshape = []
+        size = int(np.sqrt(len(PeakAngle)))
+
+        for i in range(len(PeakAngle)):
+            reshape.append(PeakAngle[i][IntOrAng])
+
+        mapDim = np.reshape(reshape, (size, size))
 
         plt.figure(figsize=(plt_size, plt_size))
         plt.title(plotTitle, fontdict={'fontsize': '20'}, pad='10')
         ax = sns.heatmap(mapDim, cmap=mapColor, annot=True, fmt='0g', square=True)
         plt.show()
+
+    def angleVintensity_plots(direcList, dir_name='current_dataset', savepath='path'):
+
+        foldername = os.path.basename(dir_name)
+
+        path = os.path.join(savepath, foldername)
+        os.mkdir(path)
+
+        for i in range(len(direcList)):
+            plt.title(f'XRD_{i}');
+            direcList[i].plot(x='Angle', y='Intensity', title=f'XRD_{i}');
+            plt.savefig(f'{path}/1d_plots_{i}_.png');
+
+    def plot_scans(direc, filePath, serpentine=False):
+
+        fs = int(np.sqrt(len(direc)))
+
+        direc = datasets.sort_direcList(direc, i=-2)
+        direc = np.reshape(direc, (fs, fs))
+        if serpentine == True:
+            print("serpentine scans were used; adjusting accordingly")
+            direc[1::2, :] = direc[1::2, ::-1]
+        else:
+            print("No serpentine scans. plot order unchanged")
+        direc = np.concatenate(direc)
+        direc = direc.tolist()
+
+        imgs = []
+        valid_images = ['.png', '.jpeg', '.tiff']
+
+        for i in direc:
+            ext = os.path.splitext(i)[1]
+            if ext.lower() not in valid_images:
+                continue
+            imgs.append(Image.open(os.path.join(filePath, i)))
+
+        fig = plt.figure(figsize=(145., 145.))
+        grid = ImageGrid(fig, 111, nrows_ncols=(fs, fs), direction='row')
+
+        for ax, im in zip(grid, imgs):
+            ax.imshow(im)
