@@ -29,13 +29,17 @@ class datasets:
         :param direcPath: folder path specified outside of class; describes location of data
         '''
 
-        os.chdir(direcPath)
+        os.chdir(f'{direcPath}/raw_data')
         datasets.mk_dataspace(direcPath)
         direc = os.listdir(f'{direcPath}/raw_data')
 
         return direc
 
     def mk_dataspace(data_direc):
+
+        '''
+        :param direcPath: folder path specified outside of class; describes location of data
+        '''
 
         new_dirs = ['raw_data', 'plots', 'unstitched_plots']
 
@@ -104,8 +108,7 @@ class datasets:
         rename = ["Angle", "Intensity"]
 
         for i in direc:
-            direcList.append(pd.read_csv(i, delimiter=' ', header=None,
-                                         names=rename, usecols=col_list))
+            direcList.append(pd.read_csv(i, delimiter=' ', header=None, names=rename, usecols=col_list))
 
         direcList = dict(zip(key, direcList))
 
@@ -116,7 +119,7 @@ class datasets:
             # maxAngle.append(max(dataFn[i]['Intensity'].items(), key=operator.itemgetter(1))[0])
             maxIntAngle.append(dataFn[i].loc[dataFn[i]['Intensity'].idxmax()].tolist())
 
-    def xrd_heatmap(PeakAngle, IntOrAng=1, plt_size=1.0, plotTitle='', mapColor=''):
+    def xrd_heatmap(PeakAngle, savepath='', IntOrAng=1, plt_size=1.0, plotTitle='', mapColor=''):
 
         reshape = []
         size = int(np.sqrt(len(PeakAngle)))
@@ -127,23 +130,27 @@ class datasets:
         mapDim = np.reshape(reshape, (size, size))
 
         plt.figure(figsize=(plt_size, plt_size))
-        plt.title(plotTitle, fontdict={'fontsize': '20'}, pad='10')
+        plt.title(plotTitle, fontdict={'fontsize': '35'}, pad='10')
         ax = sns.heatmap(mapDim, cmap=mapColor, annot=True, fmt='0g', square=True)
+        plt.savefig(f'{savepath}/plots/{plotTitle}.png')
         plt.show()
 
-    def angleVintensity_plots(direcList, dir_name='current_dataset', savepath='path'):
+    def angleVintensity_plots(direcList, dir_name='current_dataset'):
 
-        foldername = os.path.basename(dir_name)
+        # foldername = os.path.basename(dir_name)
 
-        path = os.path.join(savepath, foldername)
-        os.mkdir(path)
+        # path = os.path.join(savepath, foldername)
+        # os.mkdir(path)
 
         for i in range(len(direcList)):
             plt.title(f'XRD_{i}');
             direcList[i].plot(x='Angle', y='Intensity', title=f'XRD_{i}');
-            plt.savefig(f'{path}/1d_plots_{i}_.png');
+            plt.savefig(f'{dir_name}/unstitched_plots/1d_plots_{i}_.png');
 
-    def plot_scans(direc, filePath, serpentine=False):
+    def plot_scans(filePath, serpentine=False):
+
+        grab_path = f'{filePath}/unstitched_plots'
+        direc = os.listdir(grab_path)
 
         fs = int(np.sqrt(len(direc)))
 
@@ -164,10 +171,12 @@ class datasets:
             ext = os.path.splitext(i)[1]
             if ext.lower() not in valid_images:
                 continue
-            imgs.append(Image.open(os.path.join(filePath, i)))
+            imgs.append(Image.open(os.path.join(grab_path, i)))  # filePath
 
         fig = plt.figure(figsize=(145., 145.))
         grid = ImageGrid(fig, 111, nrows_ncols=(fs, fs), direction='row')
 
         for ax, im in zip(grid, imgs):
             ax.imshow(im)
+
+        plt.savefig(f'{filePath}/plots/stitched_plot.png')
