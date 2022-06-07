@@ -29,8 +29,9 @@ class datasets:
         :param direcPath: folder path specified outside of class; describes location of data
         '''
 
-        os.chdir(f'{direcPath}/raw_data')
+        os.chdir(f'{direcPath}')
         datasets.mk_dataspace(direcPath)
+        os.chdir(f'{direcPath}/raw_data/')
         direc = os.listdir(f'{direcPath}/raw_data')
 
         return direc
