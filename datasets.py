@@ -12,14 +12,28 @@ import glob
 
 class datasets:
 
-    def __init__(self, data_direc, direc, direcList, direcNew, maxVal, maxKey, IntOrAng):
+    def __init__(self, direc, direcPath, data_direc, direcList, direcNew, PeakAngle, IntOrAng):
         self.direc = direc
+        self.direcPath = direcPath
         self.data_direc = data_direc
         self.direcList = direcList
         self.direcNew = direcNew
-        self.maxInt = maxInt
+        self.PeakAngle = PeakAngle
         self.maxAngle = maxAngle
         self.IntOrAng = IntOrAng
+
+    def ch_dir(direc, direcPath):
+
+        '''
+        :param direc: stores all filenames in a directory as a list
+        :param direcPath: folder path specified outside of class; describes location of data
+        '''
+
+        os.chdir(direcPath)
+        datasets.mk_dataspace(direcPath)
+        direc = os.listdir(f'{direcPath}/raw_data')
+
+        return direc
 
     def mk_dataspace(data_direc):
 
