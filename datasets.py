@@ -19,7 +19,6 @@ class datasets:
         self.direcList = direcList
         self.direcNew = direcNew
         self.PeakAngle = PeakAngle
-        self.maxAngle = maxAngle
         self.IntOrAng = IntOrAng
 
     def ch_dir(direc, direcPath):
@@ -33,8 +32,9 @@ class datasets:
         datasets.mk_dataspace(direcPath)
         os.chdir(f'{direcPath}/raw_data/')
         direc = os.listdir(f'{direcPath}/raw_data')
+        sort_direc = datasets.imgOrPlot(direc)
 
-        return direc
+        return sort_direc
 
     def mk_dataspace(data_direc):
 
@@ -55,7 +55,12 @@ class datasets:
                 # merge current directory with new folder 'raw_data'
             new_direc = os.path.join(data_direc, new_dirs[0])
 
-            pattern = '*.txt'
+            mime = os.listdir(data_direc)
+            if mime[1].find(".txt") != -1:
+                pattern = "*.txt"
+            else:
+                pattern = "*.tiff"
+
             files = glob.glob(data_direc + pattern)
 
             # moves text files to 'raw_data' folder
@@ -90,7 +95,7 @@ class datasets:
 
         else:
             for i in direc:
-                dir_new = datasets.sort_direcList(direc, i=3)
+                dir_new = datasets.sort_direcList(direc, i=-3)
                 # newLab = i.replace('_waxs_stitched.tiff', '')
                 # dir_new.add(newLab)
         # dir_new = list(dir_new)
@@ -113,12 +118,10 @@ class datasets:
 
         direcList = dict(zip(key, direcList))
 
-    def getMaxPeak(dataFn, maxIntAngle):
+    def getMaxPeak(dataFn, PeakAngle):
 
         for i in range(len(dataFn)):
-            # maxInt.append(max(dataFn[i]['Intensity']))
-            # maxAngle.append(max(dataFn[i]['Intensity'].items(), key=operator.itemgetter(1))[0])
-            maxIntAngle.append(dataFn[i].loc[dataFn[i]['Intensity'].idxmax()].tolist())
+            PeakAngle.append(dataFn[i].loc[dataFn[i]['Intensity'].idxmax()].tolist())
 
     def xrd_heatmap(PeakAngle, savepath='', IntOrAng=1, plt_size=1.0, plotTitle='', mapColor=''):
 
@@ -139,7 +142,6 @@ class datasets:
     def angleVintensity_plots(direcList, dir_name='current_dataset'):
 
         # foldername = os.path.basename(dir_name)
-
         # path = os.path.join(savepath, foldername)
         # os.mkdir(path)
 
@@ -148,14 +150,20 @@ class datasets:
             direcList[i].plot(x='Angle', y='Intensity', title=f'XRD_{i}');
             plt.savefig(f'{dir_name}/unstitched_plots/1d_plots_{i}_.png');
 
-    def plot_scans(filePath, serpentine=False):
+    def plot_scans(filePath, serpentine=False, filetype='text'):
 
-        grab_path = f'{filePath}/unstitched_plots'
+        if filetype == 'text':
+            grab_path = f'{filePath}/unstitched_plots'
+            sort = -2
+        elif filetype == 'tiff':
+            grab_path = f'{filePath}/raw_data'
+            sort = -3
+
         direc = os.listdir(grab_path)
 
         fs = int(np.sqrt(len(direc)))
 
-        direc = datasets.sort_direcList(direc, i=-2)
+        direc = datasets.sort_direcList(direc, i=sort)
         direc = np.reshape(direc, (fs, fs))
         if serpentine == True:
             print("serpentine scans were used; adjusting accordingly")
