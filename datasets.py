@@ -2,6 +2,7 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 from matplotlib import pyplot as plt
 from PIL import Image
 import seaborn as sns
+from math import log
 import pandas as pd
 import os, os.path
 import numpy as np
@@ -58,6 +59,8 @@ class datasets:
             mime = os.listdir(data_direc)
             if mime[1].find(".txt") != -1:
                 pattern = "*.txt"
+            elif mime[1].find(".png") != -1:
+                pattern = "*.png"
             else:
                 pattern = "*.tiff"
 
@@ -118,10 +121,23 @@ class datasets:
 
         direcList = dict(zip(key, direcList))
 
+    def logInt(PeakAngle):
+
+        # calculates the log10 value of the intensity
+        # and returns it in the same list
+        for i in range(len(PeakAngle)):
+            PeakAngle[i][1] = log(PeakAngle[i][1])
+
+        return PeakAngle
+
     def getMaxPeak(dataFn, PeakAngle):
 
+        # map max intensity to corresponding angle
         for i in range(len(dataFn)):
             PeakAngle.append(dataFn[i].loc[dataFn[i]['Intensity'].idxmax()].tolist())
+
+        # use logInt method to convert intensity to log(intensity)
+        datasets.logInt(PeakAngle)
 
     def xrd_heatmap(PeakAngle, savepath='', IntOrAng=1, plt_size=1.0, plotTitle='', mapColor=''):
 
@@ -150,12 +166,15 @@ class datasets:
             direcList[i].plot(x='Angle', y='Intensity', title=f'XRD_{i}');
             plt.savefig(f'{dir_name}/unstitched_plots/1d_plots_{i}_.png');
 
-    def plot_scans(filePath, serpentine=False, filetype='text'):
+    def plot_scans(filePath, rows_cols=(1, 1), serpentine=False, filetype='text'):
 
         if filetype == 'text':
             grab_path = f'{filePath}/unstitched_plots'
             sort = -2
         elif filetype == 'tiff':
+            grab_path = f'{filePath}/raw_data'
+            sort = -3
+        elif filetype == 'png':
             grab_path = f'{filePath}/raw_data'
             sort = -3
 
@@ -164,7 +183,7 @@ class datasets:
         fs = int(np.sqrt(len(direc)))
 
         direc = datasets.sort_direcList(direc, i=sort)
-        direc = np.reshape(direc, (fs, fs))
+        direc = np.reshape(direc, rows_cols)
         if serpentine == True:
             print("serpentine scans were used; adjusting accordingly")
             direc[1::2, :] = direc[1::2, ::-1]
@@ -174,7 +193,7 @@ class datasets:
         direc = direc.tolist()
 
         imgs = []
-        valid_images = ['.png', '.jpeg', '.tiff']
+        valid_images = ['.png', '.tiff']
 
         for i in direc:
             ext = os.path.splitext(i)[1]
@@ -183,7 +202,7 @@ class datasets:
             imgs.append(Image.open(os.path.join(grab_path, i)))  # filePath
 
         fig = plt.figure(figsize=(145., 145.))
-        grid = ImageGrid(fig, 111, nrows_ncols=(fs, fs), direction='row')
+        grid = ImageGrid(fig, 111, nrows_ncols=rows_cols, direction='row')
 
         for ax, im in zip(grid, imgs):
             ax.imshow(im)
