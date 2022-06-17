@@ -1,7 +1,7 @@
 from mpl_toolkits.axes_grid1 import ImageGrid
 from matplotlib import pyplot as plt
+import colormaps as cm
 from PIL import Image
-import colorcet as cc
 import seaborn as sns
 from math import log
 import pandas as pd
