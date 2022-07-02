@@ -24,7 +24,7 @@ rainbow3 = col_pal(scale['rainbow3'])
 rainbow4 = col_pal(scale['rainbow4'])
 workbow = col_pal(scale['workbow'])
 deuroto = col_pal(scale['deuroto'])
-red_blue = col_pal(scale['deuroto'])
+red_blue = col_pal(scale['red_blue'])
 
 # Usage:
 
