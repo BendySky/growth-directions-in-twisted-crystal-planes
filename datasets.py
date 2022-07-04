@@ -1,9 +1,9 @@
 from mpl_toolkits.axes_grid1 import ImageGrid
 from matplotlib import pyplot as plt
+from math import log, pi
+import colormaps as cm
 from PIL import Image
-import colorcet as cc
 import seaborn as sns
-from math import log
 import pandas as pd
 import os, os.path
 import numpy as np
@@ -140,6 +140,44 @@ class datasets:
         # use logInt method to convert intensity to log(intensity)
         datasets.logInt(PeakAngle)
 
+    def contour_plot(PeakAngle, savepath='', plot_title='', plot_size=15., trans = True):
+
+        mesh = []
+        size = int(np.sqrt(len(PeakAngle)))
+
+        # convert array into meshgrid and re-arrange order so
+        # the quiver plot matches the micrograph, heatmaps etc.
+        for i in range(len(PeakAngle)):
+            mesh.append(PeakAngle[i][0])
+
+        mesh.reverse()
+        mesh = np.meshgrid(mesh)
+        mesh = np.reshape(mesh, (size, size))
+
+        for i in range(len(mesh)):
+            mesh[i] = mesh[i][::-1]
+
+        fig, ax = plt.subplots(figsize=(plot_size, plot_size))
+
+        # create empty list for coordinates of quiver plot
+        arr = []
+        range(int(np.sqrt(len(PeakAngle))))
+        for i in range(int(np.sqrt(len(PeakAngle)))):
+            arr.append(i)
+
+        x_pos, y_pos = arr, arr
+
+        # map angles to corresponding locations on sinosoidal plot.
+        # see the trigonometric circle to get a better understanding
+        # of what is happening here
+        X, Y = np.cos(mesh * (pi / 180)), np.sin(mesh * (pi / 180))
+
+        # quiver plot
+        ax.quiver(x_pos, y_pos, X, Y, pivot='middle')
+        ax.title.set_text(plot_title)
+        plt.savefig(f'{savepath}/plots/quiver_plot.png', transparent=trans)
+        plt.show()
+
     def xrd_heatmap(PeakAngle, savepath='', IntOrAng=1, plt_size=1.0, plotTitle='', mapColor=''):
 
         reshape = []
@@ -185,7 +223,7 @@ class datasets:
 
         direc = datasets.sort_direcList(direc, i=sort)
         direc = np.reshape(direc, rows_cols)
-        if serpentine == True:
+        if serpentine:
             print("serpentine scans were used; adjusting accordingly")
             direc[1::2, :] = direc[1::2, ::-1]
         else:
