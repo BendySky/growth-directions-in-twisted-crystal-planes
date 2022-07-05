@@ -14,16 +14,48 @@ if __name__ == '__main__':
     #window.attributes("-topmost", 1)
     #window.attributes('-alpha', 1)
 
+    # noinspection PyTypeChecker
     def select_folder():
+
         direc_path = fd.askdirectory(title='Select Folder Containing Data', initialdir='/')
         direc_path = f'{direc_path}/'
 
-        return direc_path
+        sort_dir = []
+        sort_dir = ds.ch_dir(sort_dir, direc_path)
 
-    def selection():
-        choice = var.get()
+        dfList = []
+        dfList = ds.df_to_list(sort_dir, dfList)
 
-    var = IntVar()
+        angleAtPeak = []
+        ds.getMaxPeak(dfList, angleAtPeak)
+        print(direc_path)
+        #return direc_path, angleAtPeak
+
+    def file_select():
+        choice = file_var.get()
+        if choice == 1:
+            file = 'text'
+        elif choice == 2:
+            file = 'png'
+        elif choice == 3:
+            file = 'tiff'
+        return file
+
+    def serp_sel():
+        choice=yn.get()
+        if choice == 1:
+             serp = True
+        elif choice == 2:
+            serp = False
+        return yn
+
+    def run_prog():
+
+        serp = serp_sel()
+        ds.xrd_heatmap(angleAtPeak, savepath=direc_path, IntOrAng=0, plt_size=row)
+
+    file_var = IntVar()
+    yn = IntVar()
     serp = StringVar()
     color = StringVar()
     qp_ti = StringVar()
@@ -35,9 +67,9 @@ if __name__ == '__main__':
 
     filetype = tk.LabelFrame(filetype_options, text='File Type')
     filetype.grid(ipadx=15, ipady=4, padx=15, pady=0, row=1, column=0, columnspan=1, rowspan=3, sticky='S')
-    Radiobutton(filetype, text="Text", variable=var, value=1, command=selection, pady=5).pack()
-    Radiobutton(filetype, text="PNG", variable=var, value=2, command=selection, pady=5).pack()
-    Radiobutton(filetype, text="TIFF", variable=var, value=3, command=selection, pady=5).pack()
+    Radiobutton(filetype, text="Text", variable=file_var, value=1, command=file_select, pady=5).pack()
+    Radiobutton(filetype, text="PNG", variable=file_var, value=2, command=file_select, pady=5).pack()
+    Radiobutton(filetype, text="TIFF", variable=file_var, value=3, command=file_select, pady=5).pack()
 
     plot_options = tk.LabelFrame(filetype_options, text='Plot Options')
     plot_options.grid(ipadx=15, ipady=5, padx=15, pady=0, row=1, column=1, columnspan=1, rowspan=3)
@@ -54,8 +86,10 @@ if __name__ == '__main__':
 
     serp_label = Label(plot_options, text='Serpentine')
     serp_label.grid(ipadx=4, padx=4, pady=5, row=2, column=1, sticky='W')
-    serp_drop = OptionMenu(plot_options, serp, "Yes", "No")
-    serp_drop.grid(ipadx=4, padx=4, pady=5, row=2, column=2, sticky='W')
+    serp_buttonY = Radiobutton(plot_options, text='Yes', variable=yn,
+                               value=1, pady=5).grid(row=2, column=2, sticky='W')
+    serp_buttonX = Radiobutton(plot_options, text='No', variable=yn,
+                               value=2, pady=5).grid(row=2, column=2, sticky='E')
 
     plot_data = tk.LabelFrame(window, text=' 3. Plot Data')
     plot_data.grid(row=8, columnspan=7, rowspan=5,
@@ -100,5 +134,8 @@ if __name__ == '__main__':
 
     direc_button = Button(window, text='Browse ...', command=select_folder)
     direc_button.grid(padx=15, row=20, column=0, sticky='W')
+
+    run_button = Button(window, text=' Run ', command=run_prog)
+    run_button.grid(padx=10, row=20, column=0)
 
     window.mainloop()
