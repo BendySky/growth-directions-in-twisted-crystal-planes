@@ -24,7 +24,7 @@ if __name__ == '__main__':
         sort_dir = ds.ch_dir(sort_dir, direc_path)
 
         dfList = []
-        dfList = ds.df_to_list(sort_dir, dfList)
+        ds.df_to_list(sort_dir, dfList)
 
         angleAtPeak = []
         ds.getMaxPeak(dfList, angleAtPeak)
@@ -49,10 +49,10 @@ if __name__ == '__main__':
             serp = False
         return yn
 
-    def run_prog():
+    #def run_prog():
 
-        serp = serp_sel()
-        ds.xrd_heatmap(angleAtPeak, savepath=direc_path, IntOrAng=0, plt_size=row)
+    #    serp = serp_sel()
+    #    ds.xrd_heatmap(angleAtPeak, savepath=direc_path, IntOrAng=0, plt_size=row)
 
     file_var = IntVar()
     yn = IntVar()
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     direc_button = Button(window, text='Browse ...', command=select_folder)
     direc_button.grid(padx=15, row=20, column=0, sticky='W')
 
-    run_button = Button(window, text=' Run ', command=run_prog)
-    run_button.grid(padx=10, row=20, column=0)
+    #run_button = Button(window, text=' Run ', command=run_prog)
+    #run_button.grid(padx=10, row=20, column=0)
 
     window.mainloop()
