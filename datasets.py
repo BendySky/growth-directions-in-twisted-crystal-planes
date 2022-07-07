@@ -1,11 +1,13 @@
 from mpl_toolkits.axes_grid1 import ImageGrid
 from matplotlib import pyplot as plt
 from math import log, pi
+import colormaps as cm
 from PIL import Image
 import seaborn as sns
 import pandas as pd
 import os, os.path
 import numpy as np
+import operator
 import shutil
 import glob
 
@@ -103,7 +105,7 @@ class datasets:
         # dir_new = list(dir_new)
         return dir_new
 
-    def df_to_list(direc, direcList):
+    def df_to_list(direc):
 
         '''
         :param direc: filenames stored in a list
@@ -114,11 +116,14 @@ class datasets:
         key = list(range(len(direc)))
         col_list = [0, 1]
         rename = ["Angle", "Intensity"]
+        direcList = []
 
         for i in direc:
             direcList.append(pd.read_csv(i, delimiter=' ', header=None, names=rename, usecols=col_list))
 
-        direcList = dict(zip(key, direcList))
+        # direcList = dict(zip(key, direcList))
+
+        return direcList
 
     def logInt(PeakAngle):
 
@@ -129,7 +134,10 @@ class datasets:
 
         return PeakAngle
 
-    def getMaxPeak(dataFn, PeakAngle):
+    # def getMaxPeak(dataFn, PeakAngle):
+    def getMaxPeak(dataFn):
+
+        PeakAngle = []
 
         # map max intensity to corresponding angle
         for i in range(len(dataFn)):
@@ -137,8 +145,9 @@ class datasets:
 
         # use logInt method to convert intensity to log(intensity)
         datasets.logInt(PeakAngle)
+        return PeakAngle
 
-    def contour_plot(PeakAngle, savepath='', plot_title='', plot_size=15., trans = True):
+    def contour_plot(PeakAngle, savepath='', plot_title='', plot_size=15., trans=True):
 
         mesh = []
         size = int(np.sqrt(len(PeakAngle)))
