@@ -1,5 +1,5 @@
 # growth-directions-in-twisted-crystal-planes
-Tool to analyze twisted spherulite growth and determine the change in crystal planes
+Tool to analyze banded spherulite growth and determine the growth direction at a given Q space
 
 The goal of this project is to analyze large batches of data and determine the direction of crystal growth for a given 
 growth plane. Large sets of data were collected from Brookhaven National Lab 
