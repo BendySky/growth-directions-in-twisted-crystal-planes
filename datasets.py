@@ -183,10 +183,14 @@ class datasets:
         ax.quiver(x_pos, y_pos, X, Y, pivot='middle')
         ax.title.set_text(plot_title)
         plt.savefig(f'{savepath}/plots/quiver_plot.png', transparent=trans)
-        plt.show()
+        #plt.show()
 
     def xrd_heatmap(PeakAngle, savepath='', IntOrAng=1, plt_size=1.0, plotTitle='', mapColor=''):
 
+        if IntOrAng == 0:
+            name='Angle'
+        else:
+            name='Intensity'
         reshape = []
         size = int(np.sqrt(len(PeakAngle)))
 
@@ -198,8 +202,8 @@ class datasets:
         plt.figure(figsize=(plt_size, plt_size))
         plt.title(plotTitle, fontdict={'fontsize': '35'}, pad='10')
         ax = sns.heatmap(mapDim, cmap=mapColor, annot=True, fmt='0g', square=True)
-        plt.savefig(f'{savepath}/plots/{plotTitle}.png')
-        plt.show()
+        plt.savefig(f'{savepath}/plots/{plotTitle} {name}_nameplot.png')
+        #plt.show()
 
     def angleVintensity_plots(direcList, dir_name='current_dataset'):
 
