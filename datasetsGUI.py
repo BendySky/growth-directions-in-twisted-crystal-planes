@@ -1,6 +1,9 @@
 import tkinter as tk
+import tkinter.ttk as ttk
 from tkinter import *
 import colorcet as cc
+import colormaps as cm
+from colormaps import scale
 from tkinter import filedialog as fd, LabelFrame
 from datasets import datasets as ds
 import os, os.path
@@ -15,28 +18,57 @@ if __name__ == '__main__':
     #window.attributes("-topmost", 1)
     window.attributes('-alpha', .95)
 
-    # noinspection PyTypeChecker
+    #custom theme for tkinter app, needs work before it's functional
+    style = ttk.Style()
+    style.theme_create('appstyle', parent='alt',
+                       settings={
+                           'TLabelframe': {
+                               'configure': {
+                                   'background': '#0deae4'
+                               }
+                           },
+                           'TLabelframe.Label': {
+                               'configure': {
+                                   # 'background': 'red'     uncomment this to make even label red
+                               }
+                           }
+                       }
+                       )
+    style.theme_use('appstyle')
 
     def run_prog():
-        #is this ok???
-        print(folderPath.get())
+        #print(folderPath.get())
         direc_path = folderPath.get()
 
         sort_dir = ds.ch_dir(direc_path)
         dfList = ds.df_to_list(sort_dir)
         angleAtPeak = ds.getMaxPeak(dfList)
 
-        ds.contour_plot(angleAtPeak, savepath=direc_path, plot_title=qp_ti.get(),
-                        plot_size=qp_sz.get(), trans=True)
-        qp_ti.set('')
-        qp_sz.set(35)
+        if file_var.get() == 1:
+            ds.xrd_heatmap(angleAtPeak, savepath=direc_path, IntOrAng=0,
+                           plt_size=hm_sz.get(), plotTitle=hm_ti.get(),
+                           mapColor=cm.rainbow1)
+
+            color.set('')
+
+            ds.contour_plot(angleAtPeak, savepath=direc_path, plot_title=qp_ti.get(),
+                            plot_size=qp_sz.get(), trans=True)
+
+            hm_ti.set('')
+            hm_sz.set(35)
+
+            qp_ti.set('')
+            qp_sz.set(35)
+
+
+        else:
+            print("do nothing")
 
     def select_folder():
         #folderPath = StringVar()
         direc_path = fd.askdirectory(title='Select Folder Containing Data', initialdir='/')
         direc_path = f'{direc_path}/'
         folderPath.set(direc_path)
-        #return direc_path
 
     def file_select():
         choice = file_var.get()
@@ -51,21 +83,32 @@ if __name__ == '__main__':
     def serp_sel():
         choice=yn.get()
         if choice == 1:
-             serp = True
+            serp = True
         elif choice == 2:
             serp = False
         yn.set(choice)
 
-    #def run_prog():
+    def cm_select():
+        choice = color.get()
+        if choice == 'Rainbow 1':
+            mapColor = cm.rainbow1
+        elif choice == 'Rainbow 2':
+            mapColor = cm.rainbow2
+        elif choice == 'Rainbow 3':
+            mapColor = cm.rainbow3
+        elif choice == 'Deuroto':
+            mapColor = cm.deuroto
+        elif choice == 'Red-Blue':
+            mapColor = cm.red_blue
+        color.set(choice)
 
-    #    serp = serp_sel()
-    #    ds.xrd_heatmap(angleAtPeak, savepath=direc_path, IntOrAng=0, plt_size=row)
     folderPath = StringVar()
     file_var = IntVar()
     yn = IntVar()
     serp = StringVar()
     color = StringVar()
-    plt_title = StringVar()
+    hm_ti = StringVar()
+    hm_sz = IntVar()
     qp_ti = StringVar()
     qp_sz = IntVar()
 
@@ -117,19 +160,20 @@ if __name__ == '__main__':
     hm_options = LabelFrame(plot_data, text='Heatmap Options')
     hm_options.grid(row=0, column=0, padx=15, pady=15, ipady=5, sticky='NW')
 
-    plot_title = Label(hm_options, text='Plot Title')
-    plot_title.grid(padx=0, pady=5, row=0, column=0 , sticky='W')
-    plot_entry = Entry(hm_options, textvariable=plt_title)
-    plot_entry.grid(ipadx=4, padx=4, pady=5, row=0, column=1)
+    hm_title = Label(hm_options, text='Plot Title')
+    hm_title.grid(padx=0, pady=5, row=0, column=0 , sticky='W')
+    hm_entry = Entry(hm_options, textvariable=hm_ti)
+    hm_entry.grid(ipadx=4, padx=4, pady=5, row=0, column=1)
 
     plot_size = Label(hm_options, text='Plot Size')
     plot_size.grid(pady=0, row=1, column=0, sticky='W')
-    size_entry = Entry(hm_options)
+    size_entry = Entry(hm_options, textvariable=hm_sz)
+    size_entry.insert(0, 35.)
     size_entry.grid(ipadx=4, padx=4, pady=0, row=1, column=1)
 
     color_scale = Label(hm_options, text='Color Scale')
     color_scale.grid(padx=0, pady=5, row=2, column=0, sticky='W')
-    colors = ("Rainbow 1", "Rainbow 2", "Rainbow 3", "Deuroto", "Red-Blue")
+    colors = ("Rainbow 1", "Rainbow 2", "Rainbow 3", "Rainbow 4", "Deuroto", "Red-Blue")
     color_entry = OptionMenu(hm_options, color, *colors)
     color_entry.grid(padx=0, pady=5, row=2, column=1, sticky='W')
 
@@ -152,8 +196,5 @@ if __name__ == '__main__':
 
     direc_button = Button(window, text='Run', command=run_prog)
     direc_button.grid(padx=15, row=20, column=0, sticky='W')
-
-    #run_button = Button(window, text=' Run ', command=run_prog)
-    #run_button.grid(padx=10, row=20, column=0)
 
     window.mainloop()
