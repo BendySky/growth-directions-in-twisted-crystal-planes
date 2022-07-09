@@ -14,16 +14,19 @@ import glob
 
 class datasets:
 
-    def __init__(self, direc, direcPath, data_direc, direcList, direcNew, PeakAngle, IntOrAng):
-        self.direc = direc
-        self.direcPath = direcPath
-        self.data_direc = data_direc
-        self.direcList = direcList
-        self.direcNew = direcNew
-        self.PeakAngle = PeakAngle
-        self.IntOrAng = IntOrAng
+    # def __init__(self, direc, direcPath, data_direc, direcList, direcNew, PeakAngle, IntOrAng):
+    # self.direc = direc
+    # self.direcPath = direcPath
+    # self.data_direc = data_direc
+    # self.direcList = direcList
+    # self.direcNew = direcNew
+    # self.PeakAngle = PeakAngle
+    # self.IntOrAng = IntOrAng
+    def __init__(self, direc):
 
-    def ch_dir(direcPath):
+        self.direc = direc
+
+    def ch_dir(self, direcPath):
 
         '''
         :param direc: stores all filenames in a directory as a list
@@ -33,12 +36,12 @@ class datasets:
         os.chdir(f'{direcPath}')
         datasets.mk_dataspace(direcPath)
         os.chdir(f'{direcPath}/raw_data/')
-        direc = os.listdir(f'{direcPath}/raw_data')
-        sort_direc = datasets.imgOrPlot(direc)
+        self.direc = os.listdir(f'{direcPath}/raw_data')
+        sort_direc = datasets.imgOrPlot(self.direc)
 
         return sort_direc
 
-    def mk_dataspace(data_direc):
+    def mk_dataspace(self, data_direc):
 
         '''
         :param direcPath: folder path specified outside of class; describes location of data
@@ -48,7 +51,7 @@ class datasets:
 
         # tells if the string 'raw_data' exists in the current directory
         isdir = os.path.isdir(f'{data_direc}/{new_dirs[0]}')
-        if isdir == False:
+        if not isdir:
 
             print("Directories do not yet exist")
             for items in new_dirs:
@@ -77,7 +80,7 @@ class datasets:
             print("Directories already exist")
 
     # sorts the list of filenames by job number
-    def sort_direcList(direcList, i):
+    def sort_direcList(self, direcList, i):
 
         """takes the created list and sorts the files by job number
         direcList: path to directory stored as a list
@@ -88,24 +91,20 @@ class datasets:
 
         # if-else statement is probably bad practice; is there a better way to edit this code??
 
-    def imgOrPlot(direc):
+    def imgOrPlot(self, direc):
         dir_new = []
         # dir_new = set()
         if direc[1].find('plot') != -1:
-            for i in direc:
-                dir_new = datasets.sort_direcList(direc, i=-4)
-                # newLab = i.replace('_waxs_stitched_plot.', '')
-                # dir_new.add(newLab)
+            for i in self.direc:
+                dir_new = datasets.sort_direcList(self.direc, i=-4)
 
         else:
             for i in direc:
-                dir_new = datasets.sort_direcList(direc, i=-3)
-                # newLab = i.replace('_waxs_stitched.tiff', '')
-                # dir_new.add(newLab)
-        # dir_new = list(dir_new)
+                dir_new = datasets.sort_direcList(self.direc, i=-3)
+
         return dir_new
 
-    def df_to_list(direc):
+    def df_to_list(self, direc):
 
         '''
         :param direc: filenames stored in a list
@@ -113,19 +112,19 @@ class datasets:
                     standard deviations are dropped as they are not needed
         '''
 
-        key = list(range(len(direc)))
+        key = list(range(len(self.direc)))
         col_list = [0, 1]
         rename = ["Angle", "Intensity"]
         direcList = []
 
-        for i in direc:
+        for i in self.direc:
             direcList.append(pd.read_csv(i, delimiter=' ', header=None, names=rename, usecols=col_list))
 
         # direcList = dict(zip(key, direcList))
 
         return direcList
 
-    def logInt(PeakAngle):
+    def logInt(self, PeakAngle):
 
         # calculates the log10 value of the intensity
         # and returns it in the same list
@@ -134,8 +133,7 @@ class datasets:
 
         return PeakAngle
 
-    # def getMaxPeak(dataFn, PeakAngle):
-    def getMaxPeak(dataFn):
+    def getMaxPeak(self, dataFn):
 
         PeakAngle = []
 
@@ -147,7 +145,7 @@ class datasets:
         datasets.logInt(PeakAngle)
         return PeakAngle
 
-    def contour_plot(PeakAngle, savepath='', plot_title='', plot_size=15., trans=True):
+    def contour_plot(self, PeakAngle, savepath='', plot_title='', plot_size=15., trans=True):
 
         mesh = []
         size = int(np.sqrt(len(PeakAngle)))
@@ -173,24 +171,25 @@ class datasets:
             arr.append(i)
 
         x_pos, y_pos = arr, arr
-
-        # map angles to corresponding locations on sinosoidal plot.
-        # see the trigonometric circle to get a better understanding
-        # of what is happening here
+        '''
+            map angles to corresponding locations on sinosoidal plot.
+            see the trigonometric circle to get a better understanding
+            of what is happening here
+        '''
         X, Y = np.cos(mesh * (pi / 180)), np.sin(mesh * (pi / 180))
 
         # quiver plot
         ax.quiver(x_pos, y_pos, X, Y, pivot='middle')
         ax.title.set_text(plot_title)
         plt.savefig(f'{savepath}/plots/quiver_plot.png', transparent=trans)
-        #plt.show()
+        # plt.show()
 
-    def xrd_heatmap(PeakAngle, savepath='', IntOrAng=1, plt_size=1.0, plotTitle='', mapColor=''):
+    def xrd_heatmap(self, PeakAngle, savepath='', IntOrAng=1, plt_size=1.0, plotTitle='', mapColor=''):
 
         if IntOrAng == 0:
-            name='Angle'
+            name = 'Angle'
         else:
-            name='Intensity'
+            name = 'Intensity'
         reshape = []
         size = int(np.sqrt(len(PeakAngle)))
 
@@ -203,9 +202,9 @@ class datasets:
         plt.title(plotTitle, fontdict={'fontsize': '35'}, pad='10')
         ax = sns.heatmap(mapDim, cmap=mapColor, annot=True, fmt='0g', square=True)
         plt.savefig(f'{savepath}/plots/{plotTitle} {name}_nameplot.png')
-        #plt.show()
+        # plt.show()
 
-    def angleVintensity_plots(direcList, dir_name='current_dataset'):
+    def angleVintensity_plots(self, direcList, dir_name='current_dataset'):
 
         # foldername = os.path.basename(dir_name)
         # path = os.path.join(savepath, foldername)
@@ -216,7 +215,7 @@ class datasets:
             direcList[i].plot(x='Angle', y='Intensity', title=f'XRD_{i}');
             plt.savefig(f'{dir_name}/unstitched_plots/1d_plots_{i}_.png');
 
-    def plot_scans(filePath, rows_cols=(1, 1), serpentine=False, filetype='text'):
+    def plot_scans(self, filePath, rows_cols=(1, 1), serpentine=False, filetype='text'):
 
         if filetype == 'text':
             grab_path = f'{filePath}/unstitched_plots'
@@ -228,24 +227,24 @@ class datasets:
             grab_path = f'{filePath}/raw_data'
             sort = -3
 
-        direc = os.listdir(grab_path)
+        dir = os.listdir(grab_path)
 
-        fs = int(np.sqrt(len(direc)))
+        fs = int(np.sqrt(len(dir)))
 
-        direc = datasets.sort_direcList(direc, i=sort)
-        direc = np.reshape(direc, rows_cols)
+        dir = datasets.sort_direcList(dir, i=sort)
+        dir = np.reshape(dir, rows_cols)
         if serpentine:
             print("serpentine scans were used; adjusting accordingly")
-            direc[1::2, :] = direc[1::2, ::-1]
+            dir[1::2, :] = dir[1::2, ::-1]
         else:
             print("No serpentine scans. plot order unchanged")
-        direc = np.concatenate(direc)
-        direc = direc.tolist()
+        dir = np.concatenate(dir)
+        dir = dir.tolist()
 
         imgs = []
         valid_images = ['.png', '.tiff']
 
-        for i in direc:
+        for i in dir:
             ext = os.path.splitext(i)[1]
             if ext.lower() not in valid_images:
                 continue
