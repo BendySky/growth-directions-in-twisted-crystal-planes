@@ -41,10 +41,10 @@ class datasets:
         sort_direc = os.listdir(f'{direcPath}/raw_data')
         sort_direc = self.imgOrPlot(sort_direc)
 
-        dfList = self.df_to_list(sort_direc)
-        angleAtPeak = self.getMaxPeak(dfList)
-
-        return angleAtPeak
+        #dfList = self.df_to_list(sort_direc)
+        #angleAtPeak = self.getMaxPeak(dfList)
+        return sort_direc
+        #return angleAtPeak
 
     def mk_dataspace(self, data_direc):
 
