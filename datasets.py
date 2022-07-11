@@ -22,11 +22,13 @@ class datasets:
     # self.direcNew = direcNew
     # self.PeakAngle = PeakAngle
     # self.IntOrAng = IntOrAng
-    def __init__(self, direc):
+    def __init__(self, direc='path/to/files'):
 
         self.direc = direc
 
     def ch_dir(self, direcPath):
+
+        direcPath = self.direc
 
         '''
         :param direc: stores all filenames in a directory as a list
@@ -34,12 +36,15 @@ class datasets:
         '''
 
         os.chdir(f'{direcPath}')
-        datasets.mk_dataspace(direcPath)
+        self.mk_dataspace(direcPath)
         os.chdir(f'{direcPath}/raw_data/')
-        self.direc = os.listdir(f'{direcPath}/raw_data')
-        sort_direc = datasets.imgOrPlot(self.direc)
+        sort_direc = os.listdir(f'{direcPath}/raw_data')
+        sort_direc = self.imgOrPlot(sort_direc)
 
-        return sort_direc
+        dfList = self.df_to_list(sort_direc)
+        angleAtPeak = self.getMaxPeak(dfList)
+
+        return angleAtPeak
 
     def mk_dataspace(self, data_direc):
 
@@ -227,24 +232,24 @@ class datasets:
             grab_path = f'{filePath}/raw_data'
             sort = -3
 
-        dir = os.listdir(grab_path)
+        dir_list = os.listdir(grab_path)
 
-        fs = int(np.sqrt(len(dir)))
+        fs = int(np.sqrt(len(dir_list)))
 
-        dir = datasets.sort_direcList(dir, i=sort)
-        dir = np.reshape(dir, rows_cols)
+        dir_list = datasets.sort_direcList(dir_list, i=sort)
+        dir_list = np.reshape(dir_list, rows_cols)
         if serpentine:
             print("serpentine scans were used; adjusting accordingly")
-            dir[1::2, :] = dir[1::2, ::-1]
+            dir_list[1::2, :] = dir_list[1::2, ::-1]
         else:
             print("No serpentine scans. plot order unchanged")
-        dir = np.concatenate(dir)
-        dir = dir.tolist()
+        dir_list = np.concatenate(dir_list)
+        dir_list = dir_list.tolist()
 
         imgs = []
         valid_images = ['.png', '.tiff']
 
-        for i in dir:
+        for i in dir_list:
             ext = os.path.splitext(i)[1]
             if ext.lower() not in valid_images:
                 continue
