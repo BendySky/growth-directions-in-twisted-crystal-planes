@@ -1,264 +1,90 @@
-from mpl_toolkits.axes_grid1 import ImageGrid
-from matplotlib import pyplot as plt
-from math import log, pi
-import colormaps as cm
-from PIL import Image
-import seaborn as sns
 import pandas as pd
 import os, os.path
-import numpy as np
-import operator
 import shutil
 import glob
 
 
-class datasets:
+def ch_dir(direcPath):
 
-    # def __init__(self, direc, direcPath, data_direc, direcList, direcNew, PeakAngle, IntOrAng):
-    # self.direc = direc
-    # self.direcPath = direcPath
-    # self.data_direc = data_direc
-    # self.direcList = direcList
-    # self.direcNew = direcNew
-    # self.PeakAngle = PeakAngle
-    # self.IntOrAng = IntOrAng
-    def __init__(self, direc='path/to/files'):
+    os.chdir(f'{direcPath}')
+    mk_dataspace(direcPath)
+    os.chdir(f'{direcPath}/raw_data/')
+    sort_direc = os.listdir(f'{direcPath}/raw_data')
+    sort_direc = imgOrPlot(sort_direc)
 
-        self.direc = direc
+    dfList = df_to_list(sort_direc)
+    angleAtPeak = getMaxPeak(dfList)
+    #return sort_direc
+    return angleAtPeak
 
-    def ch_dir(self, direcPath):
 
-        direcPath = self.direc
+def mk_dataspace(direc):
 
-        '''
-        :param direc: stores all filenames in a directory as a list
-        :param direcPath: folder path specified outside of class; describes location of data
-        '''
+    new_dirs = ['raw_data', 'plots', 'unstitched_plots']
 
-        os.chdir(f'{direcPath}')
-        self.mk_dataspace(direcPath)
-        os.chdir(f'{direcPath}/raw_data/')
-        sort_direc = os.listdir(f'{direcPath}/raw_data')
-        sort_direc = self.imgOrPlot(sort_direc)
+    isdir = os.path.isdir(f'{direc}/{new_dirs[0]}')
+    if not isdir:
 
-        #dfList = self.df_to_list(sort_direc)
-        #angleAtPeak = self.getMaxPeak(dfList)
-        return sort_direc
-        #return angleAtPeak
+        print("Directories do not yet exist")
+        for items in new_dirs:
+            os.mkdir(items)
 
-    def mk_dataspace(self, data_direc):
-
-        '''
-        :param direcPath: folder path specified outside of class; describes location of data
-        '''
-
-        new_dirs = ['raw_data', 'plots', 'unstitched_plots']
-
-        # tells if the string 'raw_data' exists in the current directory
-        isdir = os.path.isdir(f'{data_direc}/{new_dirs[0]}')
-        if not isdir:
-
-            print("Directories do not yet exist")
-            for items in new_dirs:
-                os.mkdir(items)
-
-                # merge current directory with new folder 'raw_data'
-            new_direc = os.path.join(data_direc, new_dirs[0])
-
-            mime = os.listdir(data_direc)
-            if mime[1].find(".txt") != -1:
-                pattern = "*.txt"
-            elif mime[1].find(".png") != -1:
-                pattern = "*.png"
-            else:
-                pattern = "*.tiff"
-
-            files = glob.glob(data_direc + pattern)
-
-            # moves text files to 'raw_data' folder
-            for file in files:
-                file_name = os.path.basename(file)
-                shutil.move(file, data_direc + new_dirs[0] + '/' + file_name)
-            print("\nInitial files moved to new filepath"
-                  "at:\n", data_direc + new_dirs[0])
+        mime = os.listdir(direc)
+        if mime[1].find(".txt") != -1:
+            pattern = "*.txt"
+        elif mime[1].find(".png") != -1:
+            pattern = "*.png"
         else:
-            print("Directories already exist")
+            pattern = "*.tiff"
 
-    # sorts the list of filenames by job number
-    def sort_direcList(self, direcList, i):
+        files = glob.glob(direc + pattern)
 
-        """takes the created list and sorts the files by job number
-        direcList: path to directory stored as a list
-        i: column separation between '_' values"""
+        # moves text files to 'raw_data' folder
+        for file in files:
+            file_name = os.path.basename(file)
+            shutil.move(file, direc + new_dirs[0] + '/' + file_name)
+        print("\nInitial files moved to new filepath"
+              " at:\n", direc + new_dirs[0])
+    else:
+        print("Directories already exist")
 
-        direcList.sort(key=lambda x: int(x.split('_')[i]))
-        return direcList
 
-        # if-else statement is probably bad practice; is there a better way to edit this code??
+def sort_direcList(direcList, i):
+    direcList.sort(key=lambda x: int(x.split('_')[i]))
+    return direcList
 
-    def imgOrPlot(self, direc):
-        dir_new = []
-        # dir_new = set()
-        if direc[1].find('plot') != -1:
-            for i in self.direc:
-                dir_new = datasets.sort_direcList(self.direc, i=-4)
 
-        else:
-            for i in direc:
-                dir_new = datasets.sort_direcList(self.direc, i=-3)
+def imgOrPlot(direc):
+    dir_new = []
 
-        return dir_new
+    if direc[1].find('plot') != -1:
+        for i in direc:
+            dir_new = sort_direcList(direc, i=-4)
 
-    def df_to_list(self, direc):
+    else:
+        for i in direc:
+            dir_new = sort_direcList(direc, i=-3)
 
-        '''
-        :param direc: filenames stored in a list
-        :direcList: filenames converted into a nested dataframe.
-                    standard deviations are dropped as they are not needed
-        '''
+    return dir_new
 
-        key = list(range(len(self.direc)))
-        col_list = [0, 1]
-        rename = ["Angle", "Intensity"]
-        direcList = []
 
-        for i in self.direc:
-            direcList.append(pd.read_csv(i, delimiter=' ', header=None, names=rename, usecols=col_list))
+def getMaxPeak(dataFn):
+    PeakAngle = []
 
-        # direcList = dict(zip(key, direcList))
+    for i in range(len(dataFn)):
+        PeakAngle.append(dataFn[i].loc[dataFn[i]['Intensity'].idxmax()].tolist())
 
-        return direcList
+    return PeakAngle
 
-    def logInt(self, PeakAngle):
 
-        # calculates the log10 value of the intensity
-        # and returns it in the same list
-        for i in range(len(PeakAngle)):
-            PeakAngle[i][1] = log(PeakAngle[i][1])
+def df_to_list(dirr):
 
-        return PeakAngle
+    key = list(range(len(dirr)))
+    col_list = [0, 1]
+    rename = ["Angle", "Intensity"]
+    direcList = []
 
-    def getMaxPeak(self, dataFn):
+    for i in dirr:
+        direcList.append(pd.read_csv(i, delimiter=' ', header=None, names=rename, usecols=col_list))
 
-        PeakAngle = []
-
-        # map max intensity to corresponding angle
-        for i in range(len(dataFn)):
-            PeakAngle.append(dataFn[i].loc[dataFn[i]['Intensity'].idxmax()].tolist())
-
-        # use logInt method to convert intensity to log(intensity)
-        datasets.logInt(PeakAngle)
-        return PeakAngle
-
-    def contour_plot(self, PeakAngle, savepath='', plot_title='', plot_size=15., trans=True):
-
-        mesh = []
-        size = int(np.sqrt(len(PeakAngle)))
-
-        # convert array into meshgrid and re-arrange order so
-        # the quiver plot matches the micrograph, heatmaps etc.
-        for i in range(len(PeakAngle)):
-            mesh.append(PeakAngle[i][0])
-
-        mesh.reverse()
-        mesh = np.meshgrid(mesh)
-        mesh = np.reshape(mesh, (size, size))
-
-        for i in range(len(mesh)):
-            mesh[i] = mesh[i][::-1]
-
-        fig, ax = plt.subplots(figsize=(plot_size, plot_size))
-
-        # create empty list for coordinates of quiver plot
-        arr = []
-        range(int(np.sqrt(len(PeakAngle))))
-        for i in range(int(np.sqrt(len(PeakAngle)))):
-            arr.append(i)
-
-        x_pos, y_pos = arr, arr
-        '''
-            map angles to corresponding locations on sinosoidal plot.
-            see the trigonometric circle to get a better understanding
-            of what is happening here
-        '''
-        X, Y = np.cos(mesh * (pi / 180)), np.sin(mesh * (pi / 180))
-
-        # quiver plot
-        ax.quiver(x_pos, y_pos, X, Y, pivot='middle')
-        ax.title.set_text(plot_title)
-        plt.savefig(f'{savepath}/plots/quiver_plot.png', transparent=trans)
-        # plt.show()
-
-    def xrd_heatmap(self, PeakAngle, savepath='', IntOrAng=1, plt_size=1.0, plotTitle='', mapColor=''):
-
-        if IntOrAng == 0:
-            name = 'Angle'
-        else:
-            name = 'Intensity'
-        reshape = []
-        size = int(np.sqrt(len(PeakAngle)))
-
-        for i in range(len(PeakAngle)):
-            reshape.append(PeakAngle[i][IntOrAng])
-
-        mapDim = np.reshape(reshape, (size, size))
-
-        plt.figure(figsize=(plt_size, plt_size))
-        plt.title(plotTitle, fontdict={'fontsize': '35'}, pad='10')
-        ax = sns.heatmap(mapDim, cmap=mapColor, annot=True, fmt='0g', square=True)
-        plt.savefig(f'{savepath}/plots/{plotTitle} {name}_nameplot.png')
-        # plt.show()
-
-    def angleVintensity_plots(self, direcList, dir_name='current_dataset'):
-
-        # foldername = os.path.basename(dir_name)
-        # path = os.path.join(savepath, foldername)
-        # os.mkdir(path)
-
-        for i in range(len(direcList)):
-            plt.title(f'XRD_{i}');
-            direcList[i].plot(x='Angle', y='Intensity', title=f'XRD_{i}');
-            plt.savefig(f'{dir_name}/unstitched_plots/1d_plots_{i}_.png');
-
-    def plot_scans(self, filePath, rows_cols=(1, 1), serpentine=False, filetype='text'):
-
-        if filetype == 'text':
-            grab_path = f'{filePath}/unstitched_plots'
-            sort = -2
-        elif filetype == 'tiff':
-            grab_path = f'{filePath}/raw_data'
-            sort = -3
-        elif filetype == 'png':
-            grab_path = f'{filePath}/raw_data'
-            sort = -3
-
-        dir_list = os.listdir(grab_path)
-
-        fs = int(np.sqrt(len(dir_list)))
-
-        dir_list = datasets.sort_direcList(dir_list, i=sort)
-        dir_list = np.reshape(dir_list, rows_cols)
-        if serpentine:
-            print("serpentine scans were used; adjusting accordingly")
-            dir_list[1::2, :] = dir_list[1::2, ::-1]
-        else:
-            print("No serpentine scans. plot order unchanged")
-        dir_list = np.concatenate(dir_list)
-        dir_list = dir_list.tolist()
-
-        imgs = []
-        valid_images = ['.png', '.tiff']
-
-        for i in dir_list:
-            ext = os.path.splitext(i)[1]
-            if ext.lower() not in valid_images:
-                continue
-            imgs.append(Image.open(os.path.join(grab_path, i)))  # filePath
-
-        fig = plt.figure(figsize=(145., 145.))
-        grid = ImageGrid(fig, 111, nrows_ncols=rows_cols, direction='row')
-
-        for ax, im in zip(grid, imgs):
-            ax.imshow(im)
-
-        plt.savefig(f'{filePath}/plots/stitched_plot.png')
+    return direcList
