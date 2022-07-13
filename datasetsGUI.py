@@ -49,6 +49,10 @@ if __name__ == '__main__':
                            plt_size=hm_sz.get(), plotTitle=hm_ti.get(),
                            mapColor=cm.rainbow1)
 
+            ds.xrd_heatmap(angleAtPeak, savepath=direc_path, IntOrAng=1,
+                           plt_size=hm_sz.get(), plotTitle=hm_ti.get(),
+                           mapColor=cm.rainbow1)
+
             color.set('')
 
             ds.contour_plot(angleAtPeak, savepath=direc_path, plot_title=qp_ti.get(),
