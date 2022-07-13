@@ -1,10 +1,11 @@
+from math import log
 import pandas as pd
 import os, os.path
 import shutil
 import glob
 
 
-def ch_dir(direcPath):
+def get_vals(direcPath):
 
     os.chdir(f'{direcPath}')
     mk_dataspace(direcPath)
@@ -13,9 +14,7 @@ def ch_dir(direcPath):
     sort_direc = imgOrPlot(sort_direc)
 
     dfList = df_to_list(sort_direc)
-    angleAtPeak = getMaxPeak(dfList)
-    #return sort_direc
-    return angleAtPeak
+    return dfList
 
 
 def mk_dataspace(direc):
@@ -68,11 +67,20 @@ def imgOrPlot(direc):
     return dir_new
 
 
+def logInt(PeakAngle):
+
+    for i in range(len(PeakAngle)):
+        PeakAngle[i][1] = log(PeakAngle[i][1])
+
+    return PeakAngle
+
+
 def getMaxPeak(dataFn):
     PeakAngle = []
 
     for i in range(len(dataFn)):
         PeakAngle.append(dataFn[i].loc[dataFn[i]['Intensity'].idxmax()].tolist())
+    logInt(PeakAngle)
 
     return PeakAngle
 
