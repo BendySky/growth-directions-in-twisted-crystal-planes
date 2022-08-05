@@ -3,9 +3,10 @@ import tkinter.ttk as ttk
 from tkinter import *
 import colorcet as cc
 import colormaps as cm
-from colormaps import scale
+from colormaps import trig_scale
 from tkinter import filedialog as fd, LabelFrame
-from datasets import datasets as ds
+import datasets as ds
+from waxsPlots import plotscans as ps
 import os, os.path
 
 # from datasets import datasets as ds
@@ -37,26 +38,22 @@ if __name__ == '__main__':
     style.theme_use('appstyle')
 
     def run_prog():
-        #print(folderPath.get())
         direc_path = folderPath.get()
 
-        sort_dir = ds.ch_dir(direc_path)
-        dfList = ds.df_to_list(sort_dir)
+        dfList = ds.get_vals(direc_path)
         angleAtPeak = ds.getMaxPeak(dfList)
 
         if file_var.get() == 1:
-            ds.xrd_heatmap(angleAtPeak, savepath=direc_path, IntOrAng=0,
-                           plt_size=hm_sz.get(), plotTitle=hm_ti.get(),
-                           mapColor=cm.rainbow1)
-
-            ds.xrd_heatmap(angleAtPeak, savepath=direc_path, IntOrAng=1,
-                           plt_size=hm_sz.get(), plotTitle=hm_ti.get(),
-                           mapColor=cm.rainbow1)
+            #create object instance
+            plots = ps(peakAngle=angleAtPeak, savepath=direc_path, plot_title=hm_ti.get(), plot_size=hm_sz.get())
+            #plot heatmap for max angles
+            plots.xrd_heatmap(IntOrAng=0, mapColor=cm.rainbow1)
+            #plot heatmap for max intensities
+            plots.xrd_heatmap(IntOrAng=1, mapColor=cm.rainbow1)
 
             color.set('')
 
-            ds.contour_plot(angleAtPeak, savepath=direc_path, plot_title=qp_ti.get(),
-                            plot_size=qp_sz.get(), trans=True)
+            plots.contour_plot(trans=True)
 
             hm_ti.set('')
             hm_sz.set(35)
@@ -69,7 +66,6 @@ if __name__ == '__main__':
             print("do nothing")
 
     def select_folder():
-        #folderPath = StringVar()
         direc_path = fd.askdirectory(title='Select Folder Containing Data', initialdir='/')
         direc_path = f'{direc_path}/'
         folderPath.set(direc_path)
