@@ -55,13 +55,16 @@ class plotscans:
         '''
         X, Y = np.cos(mesh * (pi / 180)), np.sin(mesh * (pi / 180))
 
+        #removes arrow heads and colors plot white
+        quiveropts = dict(color='white', headlength=0, headwidth=1, linewidth=1)
+
         # quiver plot
-        ax.quiver(x_pos, y_pos, X, Y, pivot='middle')
+        ax.quiver(x_pos, y_pos, X, Y, pivot='middle', **quiveropts)
         ax.title.set_text(plot_title)
         plt.savefig(f'{savepath}/plots/quiver_plot.png', transparent=trans)
         #plt.show()
 
-    def xrd_heatmap(self, IntOrAng=1, mapColor=''):
+    def xrd_heatmap(self, IntOrAng=1, mapColor='', annotate=True):
 
         peakAngle = self.peakAngle
         savepath = self.savepath
@@ -82,7 +85,7 @@ class plotscans:
 
         plt.figure(figsize=(plot_size, plot_size))
         plt.title(plot_title, fontdict={'fontsize': '35'}, pad='10')
-        ax = sns.heatmap(mapDim, cmap=mapColor, annot=True, fmt='0g', square=True)
+        ax = sns.heatmap(mapDim, cmap=mapColor, annot=annotate, fmt='0g', square=True)
         plt.savefig(f'{savepath}/plots/{plot_title} {name}_nameplot.png')
         # plt.show()
 
@@ -95,6 +98,7 @@ class plotscans:
         for i in range(len(direcList)):
             plt.title(f'XRD_{i}');
             direcList[i].plot(x='Angle', y='Intensity', title=f'XRD_{i}');
+            #plt.gca().invert_xaxis()
             plt.savefig(f'{dir_name}/unstitched_plots/1d_plots_{i}_.png');
 
     def plot_scans(self, rows_cols=(1, 1), serpentine=False, filetype='text'):

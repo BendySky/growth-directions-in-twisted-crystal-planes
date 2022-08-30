@@ -1,6 +1,4 @@
-from matplotlib.colors import LinearSegmentedColormap as lsc
 import colorcet as cc
-
 
 
 def col_pal(color_code):
@@ -27,35 +25,6 @@ rainbow4 = col_pal(trig_scale['rainbow4'])
 workbow = col_pal(trig_scale['workbow'])
 deuroto = col_pal(trig_scale['deuroto'])
 red_blue = col_pal(trig_scale['red_blue'])
-
-from matplotlib import pyplot as plt
-import matplotlib as mpl
-from matplotlib.gridspec import GridSpec
-
-
-def plot_all_colormaps():
-    '''
-        This function will only plot the 82 built in colormaps.
-    '''
-    fig = plt.figure(facecolor='white', figsize=(25, 15), dpi=300)
-    grid = GridSpec(7, 1, hspace=.5, wspace=0.9)
-    strings = [s for s in plt.colormaps() if "_r" not in s]
-    counter = 0
-    while counter < 7:
-        column = (counter // 7) % 5
-        row = counter % 7
-        ax = fig.add_subplot(grid[row, column])
-        ax.axis('off')
-        cmap_str = strings[counter]
-        color_map = plt.get_cmap(cmap_str)
-        mpl.colorbar.ColorbarBase(ax, cmap=color_map, orientation='horizontal')
-        ax.text(-0.02, 0.5, cmap_str, ha='right', va='center', fontsize=15)
-        counter += 1
-    else:
-        fig.savefig('/Users/Teslagon/Documents/My Documents/xrdata/matplotlib colormaps.png',bbox_inches='tight') #uncomment this if you want to save the figure
-        return
-
-#plot_all_colormaps()
 
 # Usage:
 

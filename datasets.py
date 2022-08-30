@@ -67,6 +67,12 @@ def imgOrPlot(direc):
     return dir_new
 
 
+def add90(angleVal):
+
+    for i in range(len(angleVal)):
+        angleVal[i]['Angle'] = angleVal[i]['Angle']+90
+
+
 def logInt(PeakAngle):
 
     for i in range(len(PeakAngle)):
@@ -80,7 +86,7 @@ def getMaxPeak(dataFn):
 
     for i in range(len(dataFn)):
         PeakAngle.append(dataFn[i].loc[dataFn[i]['Intensity'].idxmax()].tolist())
-    logInt(PeakAngle)
+    #logInt(PeakAngle)
 
     return PeakAngle
 
@@ -94,5 +100,6 @@ def df_to_list(dirr):
 
     for i in dirr:
         direcList.append(pd.read_csv(i, delimiter=' ', header=None, names=rename, usecols=col_list))
-
+    #rotate plot counterclockwise by 90º
+    #add90(direcList)
     return direcList
